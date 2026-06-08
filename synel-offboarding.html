@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>סינאל – פרידה</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:#f5f3ef;font-family:-apple-system,'Segoe UI',Arial,sans-serif;min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:20px 0}
+.phone{background:#fff;width:100%;max-width:390px;min-height:100vh;overflow:hidden;display:flex;flex-direction:column}
+@media(min-width:440px){.phone{min-height:844px;border-radius:40px;box-shadow:0 20px 60px rgba(0,0,0,.15)}body{padding:20px;align-items:center}}
+.header{flex-shrink:0}
+.status-bar{padding:12px 20px 4px;display:flex;justify-content:space-between;font-size:12px;color:#999}
+.progress-wrap{height:4px;background:#f0ede8}
+.progress-fill{height:4px;background:#E8593C;border-radius:0 2px 2px 0;transition:width .5s ease}
+.nav{display:flex;justify-content:space-between;align-items:center;padding:10px 16px 12px;border-bottom:0.5px solid #f0ede8}
+.nav-back{font-size:13px;color:#E8593C;cursor:pointer}
+.logo{display:flex;align-items:center;gap:6px}
+.logo-circle{width:32px;height:32px;background:#E8593C;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:600}
+.screen{display:none;flex:1;flex-direction:column}
+.screen.active{display:flex}
+.content{flex:1;padding:20px 16px 100px;overflow-y:auto}
+.bottom-bar{flex-shrink:0;padding:12px 16px 28px;background:#fff;border-top:0.5px solid #f0ede8}
+.step-label{font-size:11px;color:#aaa;margin-bottom:6px}
+.screen-title{font-size:22px;font-weight:600;color:#1a1a1a;margin-bottom:6px;line-height:1.3}
+.screen-sub{font-size:14px;color:#888;line-height:1.6;margin-bottom:8px}
+.time-pill{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:#888;background:#f7f5f2;padding:5px 12px;border-radius:20px;margin-bottom:22px}
+.question{font-size:16px;font-weight:500;color:#1a1a1a;margin-bottom:14px;margin-top:8px}
+.options{display:flex;flex-direction:column;gap:10px;margin-bottom:18px}
+.opt{border:1.5px solid #e8e5e0;border-radius:14px;padding:16px 18px;font-size:15px;color:#1a1a1a;cursor:pointer;text-align:right;transition:all .15s;background:#fff;user-select:none}
+.opt:hover{border-color:#E8593C;background:#fff8f6}
+.opt.sel{border-color:#E8593C;background:#fff3f0;color:#c44428;font-weight:500}
+.opt.sel-green{border-color:#1D9E75;background:#f0faf6;color:#0F6E56;font-weight:500}
+.opt-row{display:flex;gap:10px;margin-bottom:18px}
+.opt-row .opt{flex:1;text-align:center;padding:14px 8px}
+.card{background:#f7f5f2;border-radius:14px;padding:16px;margin-bottom:14px}
+.card-title{font-size:13px;font-weight:600;color:#1a1a1a;margin-bottom:12px}
+.field-label{font-size:12px;color:#888;margin-bottom:4px}
+.field{background:#fff;border:0.5px solid #e0ddd8;border-radius:10px;padding:12px 14px;font-size:14px;color:#1a1a1a;margin-bottom:12px;width:100%;font-family:inherit}
+select.field{appearance:none;-webkit-appearance:none}
+.upload{border:1.5px dashed #d0cdc8;border-radius:12px;padding:18px;text-align:center;font-size:13px;color:#aaa;cursor:pointer;margin-bottom:12px}
+.upload:hover{border-color:#E8593C;color:#E8593C}
+.info-box{background:#fff8f0;border:1px solid #fad09a;border-radius:12px;padding:14px 16px;margin-bottom:16px}
+.info-box p{font-size:13px;color:#8a5c00;line-height:1.6}
+.pending-box{background:#fffbf0;border:1px solid #f0c060;border-radius:14px;padding:16px;margin-bottom:14px}
+.pending-title{font-size:14px;font-weight:600;color:#8a6000;margin-bottom:6px}
+.pending-desc{font-size:13px;color:#a07820;line-height:1.5}
+.highlights{border:0.5px solid #e8e5e0;border-radius:14px;overflow:hidden;margin-bottom:14px}
+.hl-row{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:0.5px solid #f0ede8}
+.hl-row:last-child{border-bottom:none}
+.hl-key{font-size:13px;color:#888}
+.hl-val{font-size:14px;font-weight:500;color:#1a1a1a}
+.steps-list{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
+.step-item{display:flex;align-items:center;gap:14px;background:#fff;border:0.5px solid #e8e5e0;border-radius:16px;padding:16px;cursor:pointer;transition:all .15s}
+.step-item.active-step{border:2px solid #E8593C}
+.step-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;background:#f7f5f2}
+.step-meta{flex:1;text-align:right}
+.step-name{font-size:15px;font-weight:600;color:#1a1a1a}
+.step-desc{font-size:12px;color:#aaa;margin-top:2px}
+.step-badge{font-size:11px;padding:3px 10px;border-radius:20px}
+.done-badge{background:#f0faf6;color:#0F6E56}
+.next-badge{background:#fff3f0;color:#E8593C}
+.prog-card{background:#fff8f5;border:1px solid #fad5c8;border-radius:16px;padding:16px;margin-bottom:20px}
+.prog-bar{height:8px;background:#f0ede8;border-radius:4px;overflow:hidden;margin:8px 0 6px}
+.prog-fill{height:8px;background:#E8593C;border-radius:4px;transition:width .5s}
+.btn{width:100%;border:none;border-radius:16px;padding:16px;font-size:16px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .15s;font-family:inherit}
+.btn:active{opacity:.88}
+.btn-primary{background:#E8593C;color:#fff}
+.btn-primary:disabled{background:#f0cec7;pointer-events:none}
+.btn-ghost{background:transparent;color:#888;font-size:13px;font-weight:400;padding:10px;margin-top:4px}
+.welcome-info{background:#f7f5f2;border-radius:16px;padding:16px;width:100%;margin-bottom:24px}
+.welcome-info-row{display:flex;justify-content:space-between;padding:6px 0;font-size:14px}
+.welcome-info-row:not(:last-child){border-bottom:0.5px solid #e8e5e0}
+.wi-label{color:#aaa}
+.wi-val{font-weight:500;color:#1a1a1a}
+.done-wrap{display:flex;flex-direction:column;align-items:center;padding:30px 20px;text-align:center}
+.done-check{width:80px;height:80px;background:#1D9E75;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px}
+.done-summary{background:#f7f5f2;border-radius:16px;padding:16px;width:100%;margin-bottom:20px;text-align:right}
+.done-row{display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:0.5px solid #e8e5e0}
+.done-row:last-child{border-bottom:none}
+.done-dot{width:8px;height:8px;border-radius:50%;background:#1D9E75;flex-shrink:0;margin-top:5px}
+.section-divider{font-size:12px;color:#aaa;text-align:center;margin:16px 0 8px}
+.doc-scroll{background:#f9f8f5;border:0.5px solid #e0ddd8;border-radius:12px;height:220px;overflow-y:auto;padding:16px;font-size:13px;color:#555;line-height:1.7;text-align:right;margin-bottom:12px}
+.sig-canvas{border:1.5px solid #e0ddd8;border-radius:12px;width:100%;height:120px;display:block;touch-action:none;cursor:crosshair;background:#fafaf8}
+.star-row{display:flex;gap:8px;justify-content:center;margin-bottom:18px}
+.star{font-size:32px;cursor:pointer;opacity:.3;transition:opacity .15s}
+.star.active{opacity:1}
+.equip-item{background:#f7f5f2;border-radius:14px;padding:14px 16px;margin-bottom:10px}
+.equip-btns{display:flex;gap:8px;margin-top:12px}
+.equip-btn{flex:1;padding:10px;border-radius:10px;border:1px solid #e0ddd8;font-size:13px;cursor:pointer;text-align:center;background:#fff;font-family:inherit}
+.equip-btn.ok{border-color:#1D9E75;background:#f0faf6;color:#0F6E56;font-weight:500}
+.equip-btn.bad{border-color:#E8593C;background:#fff3f0;color:#E8593C;font-weight:500}
+.equip-fault{margin-top:10px;display:none}
+.schedule-item{display:flex;align-items:center;gap:14px;padding:14px 16px;border-bottom:0.5px solid #f0ede8}
+.schedule-item:last-child{border-bottom:none}
+.schedule-time{font-size:13px;color:#888;min-width:44px;text-align:center;flex-shrink:0}
+.schedule-dot{width:10px;height:10px;border-radius:50%;background:#E8593C;flex-shrink:0}
+.schedule-name{font-size:14px;font-weight:500;color:#1a1a1a;text-align:right;flex:1}
+.tab-row{display:flex;gap:6px;margin-bottom:18px}
+.tab{flex:1;padding:10px 6px;border-radius:10px;border:1px solid #e0ddd8;font-size:13px;text-align:center;cursor:pointer;color:#888;transition:all .15s}
+.tab.active{border-color:#E8593C;background:#fff3f0;color:#E8593C;font-weight:500}
+.hidden{display:none!important}
+canvas#confetti{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:999}
+</style>
+</head>
+<body>
+<canvas id="confetti"></canvas>
+<div class="phone">
+
+<!-- ── S1: WELCOME ── -->
+<div class="screen active" id="s1">
+  <div class="header">
+    <div class="status-bar"><span>9:41</span><span>סינאל</span></div>
+    <div class="progress-wrap"><div class="progress-fill" style="width:0%"></div></div>
+    <div class="nav"><div class="nav-back" onclick="goTo(2)">המשך מאוחר יותר</div><div class="logo"><div class="logo-circle">SY</div></div></div>
+  </div>
+  <div class="content">
+    <div style="display:flex;flex-direction:column;align-items:center;padding:20px 0;text-align:center">
+      <div style="width:72px;height:72px;background:#E8593C;border-radius:22px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:24px;font-weight:700;margin:0 auto 24px;letter-spacing:1px">SY</div>
+      <div style="font-size:24px;font-weight:700;color:#1a1a1a;margin-bottom:8px">היי מיכל, נשלח אליך 👋</div>
+      <div style="font-size:14px;color:#888;line-height:1.6;margin-bottom:24px">כדי לסגור את תקופת העבודה שלך בסינאל בצורה חלקה, הכנו עבורך כמה שלבים קצרים.</div>
+      <div class="welcome-info">
+        <div class="welcome-info-row"><span class="wi-label">שם</span><span class="wi-val">מיכל לוי</span></div>
+        <div class="welcome-info-row"><span class="wi-label">תפקיד</span><span class="wi-val">מנהלת תפעול</span></div>
+        <div class="welcome-info-row"><span class="wi-label">תאריך עזיבה</span><span class="wi-val">15 ביוני 2026</span></div>
+        <div class="welcome-info-row"><span class="wi-label">יום אחרון</span><span class="wi-val">יום רביעי, 10 ביוני</span></div>
+      </div>
+      <div class="info-box" style="width:100%;text-align:right"><p>⏱ כל התהליך אורך כ-14 דקות. אפשר לעצור ולחזור בכל שלב.</p></div>
+    </div>
+  </div>
+  <div class="bottom-bar"><button class="btn btn-primary" onclick="goTo(2)">מתחילים ←</button></div>
+</div>
+
+<!-- ── S2: DASHBOARD ── -->
+<div class="screen" id="s2">
+  <div class="header">
+    <div class="status-bar"><span>9:41</span><span>סינאל</span></div>
+    <div class="progress-wrap"><div class="progress-fill" id="dp" style="width:0%"></div></div>
+    <div class="nav">
+      <div class="nav-back" style="color:#aaa">המשך מאוחר יותר</div>
+      <div class="logo"><div class="logo-circle">SY</div><span style="font-size:14px;font-weight:500;color:#1a1a1a">מיכל</span></div>
+      <button onclick="resetDemo()" style="font-size:12px;color:#aaa;background:#f7f5f2;border:0.5px solid #e0ddd8;border-radius:8px;padding:5px 10px;cursor:pointer;font-family:inherit">איפוס דמו</button>
+    </div>
+  </div>
+  <div class="content">
+    <div class="prog-card">
+      <div style="font-size:13px;color:#888">ההתקדמות שלך</div>
+      <div class="prog-bar"><div class="prog-fill" id="dp2" style="width:0%"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:#888"><span id="dc">0 מתוך 6 שלבים הושלמו</span><span id="dt">⏱ כ-14 דקות נותרו</span></div>
+    </div>
+    <div class="steps-list">
+      <div class="step-item active-step" onclick="goTo(3)" id="di1"><div class="step-icon">🗣️</div><div class="step-meta"><div class="step-name">ראיון עזיבה</div><div class="step-desc">שיתפי אותנו בחוויה שלך</div></div><div style="text-align:left"><span class="step-badge next-badge" id="db1">הבא</span><div style="font-size:11px;color:#aaa;margin-top:4px">~2 דק'</div></div></div>
+      <div class="step-item" onclick="goTo(4)" id="di2"><div class="step-icon">🧾</div><div class="step-meta"><div class="step-name">טופס 161 – גמר חשבון</div><div class="step-desc">סיכום תנאים + חתימה</div></div><div style="text-align:left"><span class="step-badge" id="db2" style="color:#aaa">~2 דק'</span></div></div>
+      <div class="step-item" onclick="goTo(5)" id="di3"><div class="step-icon">💻</div><div class="step-meta"><div class="step-name">החזרת ציוד</div><div class="step-desc">אישור החזרה לכל פריט</div></div><div style="text-align:left"><span class="step-badge" id="db3" style="color:#aaa">~2 דק'</span></div></div>
+      <div class="step-item" onclick="goTo(6)" id="di4"><div class="step-icon">📅</div><div class="step-meta"><div class="step-name">לו"ז יום אחרון</div><div class="step-desc">תכנון יום העזיבה</div></div><div style="text-align:left"><span class="step-badge" id="db4" style="color:#aaa">~1 דק'</span></div></div>
+      <div class="step-item" onclick="goTo(7)" id="di5"><div class="step-icon">📋</div><div class="step-meta"><div class="step-name">חפיפה למחליף/ה</div><div class="step-desc">העברת ידע מובנית</div></div><div style="text-align:left"><span class="step-badge" id="db5" style="color:#aaa">~4 דק'</span></div></div>
+      <div class="step-item" onclick="goTo(8)" id="di6"><div class="step-icon">⭐</div><div class="step-meta"><div class="step-name">מכתב המלצה</div><div class="step-desc">בקשה אופציונלית</div></div><div style="text-align:left"><span class="step-badge" id="db6" style="color:#aaa">~1 דק'</span></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── S3: ראיון עזיבה ── -->
+<div class="screen" id="s3">
+  <div class="header">
+    <div class="status-bar"><span>9:41</span><span>סינאל</span></div>
+    <div class="progress-wrap"><div class="progress-fill" style="width:16%"></div></div>
+    <div class="nav"><div class="nav-back" onclick="goTo(2)">חזרה →</div><div class="logo"><div class="logo-circle">SY</div></div></div>
+  </div>
+  <div class="content">
+    <div class="step-label">שלב 1 מתוך 6</div>
+    <div class="screen-title">ראיון עזיבה</div>
+    <div class="screen-sub">המשוב שלך עוזר לנו להשתפר. כל התשובות חסויות.</div>
+    <div class="time-pill">⏱ זמן משוער: ~2 דק'</div>
+
+    <div class="question">מה הסיבה העיקרית לעזיבה?</div>
+    <div class="options">
+      <div class="opt" onclick="selectReason(this)">הזדמנות מקצועית טובה יותר</div>
+      <div class="opt" onclick="selectReason(this)">שכר ותנאים</div>
+      <div class="opt" onclick="selectReason(this)">ניהול ויחסים בעבודה</div>
+      <div class="opt" onclick="selectReason(this)">איזון בית-עבודה</div>
+      <div class="opt" onclick="selectReason(this)">מעבר גיאוגרפי</div>
+      <div class="opt" onclick="selectReason(this)">אחר</div>
+    </div>
+
+    <div class="question">איך היית מדרגת את החוויה שלך בסינאל בסך הכל?</div>
+    <div class="star-row" id="stars">
+      <span class="star" onclick="rateStar(1)">★</span>
+      <span class="star" onclick="rateStar(2)">★</span>
+      <span class="star" onclick="rateStar(3)">★</span>
+      <span class="star" onclick="rateStar(4)">★</span>
+      <span class="star" onclick="rateStar(5)">★</span>
+    </div>
+
+    <div class="question">מה אנחנו יכולים לשפר?</div>
+    <div class="options" style="margin-bottom:12px">
+      <div class="opt" style="font-size:13px" onclick="this.classList.toggle('sel-green')">שכר ותגמול</div>
+      <div class="opt" style="font-size:13px" onclick="this.classList.toggle('sel-green')">ניהול ומשוב</div>
+      <div class="opt" style="font-size:13px" onclick="this.classList.toggle('sel-green')">תרבות ארגונית</div>
+      <div class="opt" style="font-size:13px" onclick="this.classList.toggle('sel-green')">עומס עבודה</div>
+      <div class="opt" style="font-size:13px" onclick="this.classList.toggle('sel-green')">כלים וטכנולוגיה</div>
+      <div class="opt" style="font-size:13px" onclick="this.classList.toggle('sel-green')">הוקרה והכרה</div>
+      <div class="opt" style="font-size:13px" onclick="this.classList.toggle('sel-green')">גמישות</div>
+    </div>
+
+    <div class="question">מילים אחרונות שתרצי להוסיף?</div>
+    <textarea class="field" rows="3" placeholder="כל דבר שתרצי לשתף – אנחנו קוראים את הכל."></textarea>
+    <div style="font-size:11px;color:#aaa;text-align:center;margin-top:4px">אופציונלי. ההערות נשלחות ל-HR בלבד.</div>
+  </div>
+  <div id="val-s3" style="display:none;background:#fff8f0;border-top:1px solid #fad09a;padding:12px 16px;font-size:13px;color:#8a5c00">
+    <div style="font-weight:500;margin-bottom:4px">⚠️ שדות חובה חסרים:</div>
+    <div id="val-s3-list"></div>
+  </div>
+  <div class="bottom-bar">
+    <button class="btn btn-primary" onclick="validateStep(3,4)">אישור והמשך ←</button>
+    <button class="btn btn-ghost" onclick="goTo(2)">חזרה לרשימה</button>
+  </div>
+</div>
+
+<!-- ── S4: טופס 161 ── -->
+<div class="screen" id="s4">
+  <div class="header">
+    <div class="status-bar"><span>9:41</span><span>סינאל</span></div>
+    <div class="progress-wrap"><div class="progress-fill" style="width:33%"></div></div>
+    <div class="nav"><div class="nav-back" onclick="goTo(2)">חזרה →</div><div class="logo"><div class="logo-circle">SY</div></div></div>
+  </div>
+  <div class="content">
+    <div class="step-label">שלב 2 מתוך 6</div>
+    <div class="screen-title">טופס 161 – גמר חשבון</div>
+    <div class="screen-sub">סקרי את הנתונים שנשלפו מהמערכת. לאחר חתימה, הקובץ יישלח למייל האישי שלך.</div>
+    <div class="time-pill">⏱ זמן משוער: ~2 דק'</div>
+
+    <div class="highlights">
+      <div class="hl-row"><span class="hl-key">ברוטו חודש אחרון</span><span class="hl-val">18,000 ₪</span></div>
+      <div class="hl-row"><span class="hl-key">פיצויי פיטורין</span><span class="hl-val">24,500 ₪</span></div>
+      <div class="hl-row"><span class="hl-key">יתרת ימי חופשה</span><span class="hl-val">12 ימים</span></div>
+      <div class="hl-row"><span class="hl-key">יתרת ימי מחלה</span><span class="hl-val">4 ימים</span></div>
+      <div class="hl-row"><span class="hl-key">מועד שחרור פנסיה/קופות</span><span class="hl-val">15 ביוני 2026</span></div>
+    </div>
+    <div class="info-box"><p>ℹ️ הנתונים נשלפים אוטומטית מהמערכת. במידה ויש אי-התאמה, פני לחשב השכר לפני החתימה.</p></div>
+
+    <div style="background:#fff8f0;border:1px solid #fad09a;border-radius:12px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:#8a5c00" id="doc161-warning">
+      ⚠️ יש לפתוח ולגלול את המסמך המלא לפני החתימה
+    </div>
+    <button onclick="openDoc161()" style="width:100%;background:#fff3f0;color:#E8593C;border:1.5px solid #E8593C;border-radius:14px;padding:14px;font-size:15px;font-weight:500;cursor:pointer;font-family:inherit;margin-bottom:14px">
+      📄 צפייה במסמך המלא
+    </button>
+    <div id="doc161-viewer" class="hidden">
+      <div class="doc-scroll" id="doc161-scroll" onscroll="checkDoc161(this)">
+        <strong>טופס 161 – הודעה על פרישה מעבודה</strong><br><br>
+        שם העובדת: מיכל לוי | ת"ז: 037451829<br>
+        שם המעסיק: סינאל בע"מ | מספר ניכויים: 935157461<br><br>
+        <strong>א. פרטי הפרישה</strong><br>
+        תאריך סיום עבודה: 15 ביוני 2026<br>
+        סיבת הפרישה: התפטרות<br><br>
+        <strong>ב. תשלומים</strong><br>
+        שכר אחרון: 18,000 ₪ ברוטו<br>
+        פיצויי פיטורין: 24,500 ₪<br>
+        יתרת חופשה: 12 ימים × 818 ₪ = 9,818 ₪<br><br>
+        <strong>ג. קופות גמל ופנסיה</strong><br>
+        הכספים יועמדו לרשות העובדת ביום 15 ביוני 2026.<br><br>
+        <strong>ד. אישורים</strong><br>
+        אני מאשרת כי קיבלתי את כל המגיע לי עבור תקופת עבודתי בסינאל בע"מ.<br><br>
+        <div style="border-top:0.5px solid #e0ddd8;padding-top:12px;margin-top:12px;color:#1D9E75;font-weight:500">✓ הגעת לסוף המסמך – ניתן עכשיו לחתום</div>
+      </div>
+    </div>
+    <div id="sign161-section" class="hidden">
+      <div class="opt sel-green" style="border-radius:14px;display:flex;align-items:center;justify-content:space-between;padding:14px 16px;margin-bottom:16px">
+        <span style="font-size:14px">קראתי והבנתי את המסמך המלא</span>
+        <div style="width:22px;height:22px;background:#1D9E75;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0"><span style="color:#fff;font-size:13px">✓</span></div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="text-align:center">חתימה דיגיטלית</div>
+        <div style="font-size:12px;color:#aaa;text-align:center;margin-bottom:10px">חתמי באצבע או עכבר</div>
+        <canvas class="sig-canvas" id="sig-canvas-161"></canvas>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button onclick="clearSig161()" style="flex:1;padding:8px;border:0.5px solid #e0ddd8;border-radius:8px;background:#fff;font-size:13px;cursor:pointer;font-family:inherit;color:#888">ניקוי</button>
+          <div style="flex:1;padding:8px;border-radius:8px;background:#f0faf6;font-size:13px;color:#0F6E56;text-align:center" id="sig-status-161">ממתין לחתימה...</div>
+        </div>
+        <div style="font-size:11px;color:#aaa;text-align:center;margin-top:8px">עותק חתום נשלח למייל האישי שלך</div>
+      </div>
+    </div>
+  </div>
+  <div class="bottom-bar">
+    <button class="btn btn-primary" id="btn-161" disabled onclick="completeStep(2,5)">אישור והמשך ←</button>
+    <button class="btn btn-ghost" onclick="goTo(2)">חזרה לרשימה</button>
+  </div>
+</div>
+
+<!-- ── S5: החזרת ציוד ── -->
+<div class="screen" id="s5">
+  <div class="header">
+    <div class="status-bar"><span>9:41</span><span>סינאל</span></div>
+    <div class="progress-wrap"><div class="progress-fill" style="width:50%"></div></div>
+    <div class="nav"><div class="nav-back" onclick="goTo(2)">חזרה →</div><div class="logo"><div class="logo-circle">SY</div></div></div>
+  </div>
+  <div class="content">
+    <div class="step-label">שלב 3 מתוך 6</div>
+    <div class="screen-title">החזרת ציוד</div>
+    <div class="screen-sub">אשרי החזרת כל פריט. אם יש נזק – תארי אותו.</div>
+    <div class="time-pill">⏱ זמן משוער: ~2 דק'</div>
+
+    <div class="equip-item" id="eq1">
+      <div style="display:flex;align-items:center;gap:12px"><div style="font-size:22px">💻</div><div style="font-size:15px;font-weight:500;color:#1a1a1a;text-align:right;flex:1">מחשב נייד</div></div>
+      <div class="equip-btns"><div class="equip-btn" onclick="eqOk(1)">✓ הוחזר</div><div class="equip-btn" onclick="eqFault(1)">⚠️ יש נזק</div></div>
+      <div class="equip-fault" id="eq1-fault">
+        <div class="field-label" style="margin-top:10px">תיאור הנזק</div>
+        <textarea class="field" rows="2" placeholder="תארי את הנזק..."></textarea>
+        <div class="upload">📷 צלמי את הנזק (אופציונלי)</div>
+      </div>
+    </div>
+    <div class="equip-item" id="eq2">
+      <div style="display:flex;align-items:center;gap:12px"><div style="font-size:22px">📱</div><div style="font-size:15px;font-weight:500;color:#1a1a1a;text-align:right;flex:1">טלפון נייד</div></div>
+      <div class="equip-btns"><div class="equip-btn" onclick="eqOk(2)">✓ הוחזר</div><div class="equip-btn" onclick="eqFault(2)">⚠️ יש נזק</div></div>
+      <div class="equip-fault" id="eq2-fault">
+        <div class="field-label" style="margin-top:10px">תיאור הנזק</div>
+        <textarea class="field" rows="2" placeholder="תארי את הנזק..."></textarea>
+        <div class="upload">📷 צלמי את הנזק (אופציונלי)</div>
+      </div>
+    </div>
+    <div class="equip-item" id="eq3">
+      <div style="display:flex;align-items:center;gap:12px"><div style="font-size:22px">🪪</div><div style="font-size:15px;font-weight:500;color:#1a1a1a;text-align:right;flex:1">תג כניסה למשרד</div></div>
+      <div class="equip-btns"><div class="equip-btn" onclick="eqOk(3)">✓ הוחזר</div><div class="equip-btn" onclick="eqFault(3)">⚠️ יש נזק</div></div>
+      <div class="equip-fault" id="eq3-fault">
+        <div class="field-label" style="margin-top:10px">תיאור הנזק</div>
+        <textarea class="field" rows="2" placeholder="תארי את הנזק..."></textarea>
+        <div class="upload">📷 צלמי את הנזק (אופציונלי)</div>
+      </div>
+    </div>
+    <div class="equip-item" id="eq4">
+      <div style="display:flex;align-items:center;gap:12px"><div style="font-size:22px">🖥</div><div style="font-size:15px;font-weight:500;color:#1a1a1a;text-align:right;flex:1">גישה למערכות</div></div>
+      <div class="equip-btns"><div class="equip-btn" onclick="eqOk(4)">✓ בוטל</div><div class="equip-btn" onclick="eqFault(4)">⚠️ בעיה</div></div>
+      <div class="equip-fault" id="eq4-fault">
+        <div class="field-label" style="margin-top:10px">תיאור הבעיה</div>
+        <textarea class="field" rows="2" placeholder="תארי את הבעיה..."></textarea>
+      </div>
+    </div>
+  </div>
+  <div class="bottom-bar">
+    <button class="btn btn-primary" onclick="completeStep(3,6)">אישור והמשך ←</button>
+    <button class="btn btn-ghost" onclick="goTo(2)">חזרה לרשימה</button>
+  </div>
+</div>
+
+<!-- ── S6: לו"ז יום אחרון ── -->
+<div class="screen" id="s6">
+  <div class="header">
+    <div class="status-bar"><span>9:41</span><span>סינאל</span></div>
+    <div class="progress-wrap"><div class="progress-fill" style="width:66%"></div></div>
+    <div class="nav"><div class="nav-back" onclick="goTo(2)">חזרה →</div><div class="logo"><div class="logo-circle">SY</div></div></div>
+  </div>
+  <div class="content">
+    <div class="step-label">שלב 4 מתוך 6</div>
+    <div class="screen-title">לו"ז יום אחרון</div>
+    <div class="screen-sub">יום רביעי, 10 ביוני 2026</div>
+    <div class="time-pill">⏱ זמן משוער: ~1 דק'</div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <div class="schedule-item"><div class="schedule-time">09:00</div><div class="schedule-dot"></div><div class="schedule-name">פגישת סיכום עם HR</div></div>
+      <div class="schedule-item"><div class="schedule-time">10:30</div><div class="schedule-dot"></div><div class="schedule-name">החזרת ציוד ל-IT</div></div>
+      <div class="schedule-item"><div class="schedule-time">12:00</div><div class="schedule-dot"></div><div class="schedule-name">שיחה עם המנהל הישיר</div></div>
+      <div class="schedule-item"><div class="schedule-time">14:00</div><div class="schedule-dot"></div><div class="schedule-name">ניתוק גישות מערכות</div></div>
+      <div class="schedule-item"><div class="schedule-time">15:00</div><div class="schedule-dot"></div><div class="schedule-name">ראיון עזיבה פורמלי</div></div>
+      <div class="schedule-item"><div class="schedule-time">16:00</div><div class="schedule-dot" style="background:#1D9E75"></div><div class="schedule-name">כיבוד פרידה ופינוי שולחן</div></div>
+    </div>
+    <div class="opt sel-green" style="border-radius:14px;display:flex;align-items:center;justify-content:space-between;padding:14px 16px;margin-top:8px">
+      <span style="font-size:14px">ראיתי את לוח הזמנים – אגיע בהתאם</span>
+      <div style="width:22px;height:22px;background:#1D9E75;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0"><span style="color:#fff;font-size:13px">✓</span></div>
+    </div>
+  </div>
+  <div class="bottom-bar">
+    <button class="btn btn-primary" onclick="completeStep(4,7)">אישור והמשך ←</button>
+    <button class="btn btn-ghost" onclick="goTo(2)">חזרה לרשימה</button>
+  </div>
+</div>
+
+<!-- ── S7: חפיפה ── -->
+<div class="screen" id="s7">
+  <div class="header">
+    <div class="status-bar"><span>9:41</span><span>סינאל</span></div>
+    <div class="progress-wrap"><div class="progress-fill" style="width:83%"></div></div>
+    <div class="nav"><div class="nav-back" onclick="goTo(2)">חזרה →</div><div class="logo"><div class="logo-circle">SY</div></div></div>
+  </div>
+  <div class="content">
+    <div class="step-label">שלב 5 מתוך 6</div>
+    <div class="screen-title">מסמך חפיפה למחליף/ה</div>
+    <div class="screen-sub">עזרי למחליף/ה שלך להתחיל בצורה הטובה ביותר.</div>
+    <div class="time-pill">⏱ זמן משוער: ~4 דק'</div>
+
+    <div class="card">
+      <div class="card-title">משימות פתוחות</div>
+      <div class="field-label">מה צריך להמשיך? פרויקטים, דד-ליינים קרובים, דד-ליינים חשובים</div>
+      <textarea class="field" rows="3" placeholder="לדוגמה: סיום מפרט API ללקוח X עד 15/6..."></textarea>
+    </div>
+    <div class="card">
+      <div class="card-title">אנשי קשר חשובים</div>
+      <div class="field-label">ספקים, לקוחות, עמיתים – שם, תפקיד, מה חשוב לדעת</div>
+      <textarea class="field" rows="3" placeholder="לדוגמה: יוסי כהן (ספק רכש) – מטפל בהזמנות חודשיות..."></textarea>
+    </div>
+    <div class="card">
+      <div class="card-title">איפה הקבצים?</div>
+      <div class="field-label">תיקיות משותפות, דרייב, ויקי, אקסלים חשובים</div>
+      <textarea class="field" rows="3" placeholder="לדוגמה: SharePoint/Marketing/2026 – תכנית עבודה מלאה..."></textarea>
+    </div>
+    <div class="card">
+      <div class="card-title">מה עוד חשוב לדעת?</div>
+      <div class="field-label">טיפים, מלכודות, הצלחות שלא מסמסרת באף מסמך</div>
+      <textarea class="field" rows="3" placeholder="כל דבר שיעזור למי שיגיע אחריך..."></textarea>
+    </div>
+  </div>
+  <div class="bottom-bar">
+    <button class="btn btn-primary" onclick="completeStep(5,8)">אישור והמשך ←</button>
+    <button class="btn btn-ghost" onclick="goTo(2)">חזרה לרשימה</button>
+  </div>
+</div>
+
+<!-- ── S8: מכתב המלצה ── -->
+<div class="screen" id="s8">
+  <div class="header">
+    <div class="status-bar"><span>9:41</span><span>סינאל</span></div>
+    <div class="progress-wrap"><div class="progress-fill" style="width:95%"></div></div>
+    <div class="nav"><div class="nav-back" onclick="goTo(2)">חזרה →</div><div class="logo"><div class="logo-circle">SY</div></div></div>
+  </div>
+  <div class="content">
+    <div class="step-label">שלב 6 מתוך 6</div>
+    <div class="screen-title">מכתב המלצה</div>
+    <div class="screen-sub">צעד אופציונלי – אנחנו ממליצים לבקש.</div>
+    <div class="time-pill">⏱ זמן משוער: ~1 דק'</div>
+
+    <div class="card" style="background:#fff8f5;border:1px solid #fad5c8">
+      <div style="font-size:14px;color:#1a1a1a;margin-bottom:12px;line-height:1.6">⭐ האם תרצי לבקש מכתב המלצה רשמי מ-מיכל לוי? בקשת המכתב היא צעד פשוט שיכול לעזור לך בקריירה הבאה – נשלח הודעה אוטומטית למנהל ויחזור אלייך.</div>
+    </div>
+
+    <div class="question">האם תרצי לבקש מכתב המלצה?</div>
+    <div class="options">
+      <div class="opt" id="rec-yes" onclick="selRec('yes')">כן, שלחו בקשה למנהל</div>
+      <div class="opt" id="rec-no" onclick="selRec('no')">לא, תודה</div>
+    </div>
+
+    <div id="rec-form" class="hidden">
+      <div class="pending-box">
+        <div class="pending-title">✓ הבקשה תישלח אוטומטית</div>
+        <div class="pending-desc">המנהל יקבל הודעה ויוכל להחליט אם ומתי לכתוב. הכל מטופל בדיסקרטיות.</div>
+      </div>
+      <div class="card">
+        <div class="card-title">לאיזה מייל לשלוח את המכתב?</div>
+        <input class="field" type="email" placeholder="your@email.com" dir="ltr">
+      </div>
+    </div>
+    <div id="rec-no-msg" class="hidden">
+      <div style="background:#f7f5f2;border-radius:14px;padding:16px;text-align:center;font-size:14px;color:#888">בסדר גמור! את תמיד יכולה לפנות בעתיד.</div>
+    </div>
+  </div>
+  <div class="bottom-bar">
+    <button class="btn btn-primary" onclick="completeStep(6,9)">סיום והגשה ←</button>
+    <button class="btn btn-ghost" onclick="goTo(2)">חזרה לרשימה</button>
+  </div>
+</div>
+
+<!-- ── S9: DONE ── -->
+<div class="screen" id="s9">
+  <div class="header">
+    <div class="status-bar"><span>9:41</span><span>סינאל</span></div>
+    <div class="progress-wrap"><div class="progress-fill" style="width:100%"></div></div>
+  </div>
+  <div class="content">
+    <div class="done-wrap">
+      <div class="done-check">
+        <svg viewBox="0 0 40 40" width="40" height="40" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="8,22 16,30 32,12"/></svg>
+      </div>
+      <div style="font-size:26px;font-weight:700;color:#1a1a1a;margin-bottom:8px;text-align:center">מיכל, תודה על הכל! 🙏<br>בהצלחה בדרך הבאה</div>
+      <div style="font-size:15px;color:#888;line-height:1.6;margin-bottom:24px;text-align:center">כל הטפסים נקלטו. נשמח לשמוע עליך בעתיד.</div>
+      <div class="done-summary">
+        <div style="font-size:13px;color:#aaa;text-align:center;margin-bottom:10px">מה הלאה?</div>
+        <div class="done-row"><div class="done-dot"></div><div style="font-size:14px;color:#1a1a1a">תקבלי מייל עם עותק טופס 161 החתום</div></div>
+        <div class="done-row"><div class="done-dot"></div><div style="font-size:14px;color:#1a1a1a">הפנסיה והקופות ישוחררו ב-15 ביוני</div></div>
+        <div class="done-row"><div class="done-dot"></div><div style="font-size:14px;color:#1a1a1a">מכתב ההמלצה יישלח אליך לאחר אישור המנהל</div></div>
+        <div class="done-row"><div class="done-dot"></div><div style="font-size:14px;color:#1a1a1a">HR זמין לכל שאלה עד 30 יום לאחר העזיבה</div></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+</div><!-- end phone -->
+
+<script>
+var done=[], doc161Read=false, sig161Drawn=false, currentScreen=1;
+
+function goTo(n){
+  currentScreen=n;
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active')});
+  document.getElementById('s'+n).classList.add('active');
+  var c=document.querySelector('#s'+n+' .content');
+  if(c) c.scrollTop=0;
+  if(n===2) updateDash();
+  saveProgress();
+}
+
+function completeStep(step,next){
+  if(done.indexOf(step)===-1) done.push(step);
+  updateDash();
+  if(next===9){goTo(9);confetti();}
+  else goTo(next);
+}
+
+function updateDash(){
+  var total=6,d=done.length,pct=Math.round(d/total*100);
+  document.getElementById('dp').style.width=pct+'%';
+  document.getElementById('dp2').style.width=pct+'%';
+  document.getElementById('dc').textContent=d+' מתוך '+total+' שלבים הושלמו';
+  var mins=(total-d)*2;
+  document.getElementById('dt').textContent=mins>0?'⏱ כ-'+mins+' דקות נותרו':'✓ הושלם!';
+  var map={1:'di1',2:'di2',3:'di3',4:'di4',5:'di5',6:'di6'};
+  var bmap={1:'db1',2:'db2',3:'db3',4:'db4',5:'db5',6:'db6'};
+  var nextStep=null;
+  for(var i=1;i<=total;i++){if(done.indexOf(i)===-1){nextStep=i;break;}}
+  for(var i=1;i<=total;i++){
+    var el=document.getElementById(map[i]);
+    var bd=document.getElementById(bmap[i]);
+    if(!el) continue;
+    if(done.indexOf(i)!==-1){
+      el.classList.remove('active-step');
+      el.querySelector('.step-icon').textContent='✅';
+      el.querySelector('.step-icon').style.background='#f0faf6';
+      if(bd){bd.textContent='הושלם';bd.className='step-badge done-badge';}
+    } else if(i===nextStep){
+      el.classList.add('active-step');
+      if(bd){bd.textContent='הבא';bd.className='step-badge next-badge';}
+    } else {
+      el.classList.remove('active-step');
+    }
+  }
+}
+
+function validateStep(screen,next){
+  var missing=[];
+  if(screen===3){
+    var hasReason=document.querySelector('#s3 .options .opt.sel');
+    var hasStar=document.querySelector('#stars .star.active');
+    if(!hasReason) missing.push('סיבת עזיבה');
+    if(!hasStar) missing.push('דירוג כוללי');
+  }
+  if(missing.length>0){
+    var v=document.getElementById('val-s'+screen);
+    var vl=document.getElementById('val-s'+screen+'-list');
+    if(v&&vl){
+      vl.innerHTML='';
+      missing.forEach(function(m){
+        var d=document.createElement('div');
+        d.style.padding='3px 0';
+        d.textContent='· '+m;
+        vl.appendChild(d);
+      });
+      v.style.display='block';
+    }
+    return;
+  }
+  var v=document.getElementById('val-s'+screen);
+  if(v) v.style.display='none';
+  completeStep(screen===3?1:screen, next);
+}
+
+function selectReason(el){
+  document.querySelectorAll('#s3 .options .opt').forEach(function(o){o.classList.remove('sel');});
+  el.classList.add('sel');
+}
+
+function rateStar(n){
+  var stars=document.querySelectorAll('#stars .star');
+  stars.forEach(function(s,i){s.classList.toggle('active',i<n);});
+}
+
+function openDoc161(){
+  document.getElementById('doc161-viewer').classList.remove('hidden');
+  document.getElementById('doc161-warning').classList.add('hidden');
+}
+function checkDoc161(el){
+  if(el.scrollTop+el.clientHeight>=el.scrollHeight-10 && !doc161Read){
+    doc161Read=true;
+    document.getElementById('sign161-section').classList.remove('hidden');
+    initSig161();
+    checkBtn161();
+  }
+}
+function checkBtn161(){
+  if(doc161Read && sig161Drawn) document.getElementById('btn-161').disabled=false;
+}
+function initSig161(){
+  var c=document.getElementById('sig-canvas-161');
+  if(!c||c._init) return;
+  c._init=true;
+  var ctx=c.getContext('2d');
+  c.width=c.offsetWidth;c.height=c.offsetHeight;
+  var drawing=false,lx=0,ly=0;
+  ctx.strokeStyle='#1a1a1a';ctx.lineWidth=2;ctx.lineCap='round';
+  function getPos(e){var r=c.getBoundingClientRect();var src=e.touches?e.touches[0]:e;return{x:src.clientX-r.left,y:src.clientY-r.top};}
+  function start(e){e.preventDefault();drawing=true;var p=getPos(e);lx=p.x;ly=p.y;}
+  function move(e){e.preventDefault();if(!drawing) return;var p=getPos(e);ctx.beginPath();ctx.moveTo(lx,ly);ctx.lineTo(p.x,p.y);ctx.stroke();lx=p.x;ly=p.y;if(!sig161Drawn){sig161Drawn=true;document.getElementById('sig-status-161').textContent='✓ חתימה נקלטה';document.getElementById('sig-status-161').style.color='#0F6E56';checkBtn161();}}
+  function end(){drawing=false;}
+  c.addEventListener('mousedown',start);c.addEventListener('mousemove',move);c.addEventListener('mouseup',end);
+  c.addEventListener('touchstart',start,{passive:false});c.addEventListener('touchmove',move,{passive:false});c.addEventListener('touchend',end);
+}
+function clearSig161(){
+  var c=document.getElementById('sig-canvas-161');
+  c.getContext('2d').clearRect(0,0,c.width,c.height);
+  sig161Drawn=false;
+  document.getElementById('sig-status-161').textContent='ממתין לחתימה...';
+  document.getElementById('sig-status-161').style.color='';
+  document.getElementById('btn-161').disabled=true;
+}
+
+function eqOk(n){
+  var el=document.getElementById('eq'+n);
+  var btns=el.querySelectorAll('.equip-btn');
+  btns[0].classList.add('ok');btns[1].classList.remove('bad');
+  document.getElementById('eq'+n+'-fault').style.display='none';
+  el.style.background='#f0faf6';
+}
+function eqFault(n){
+  var el=document.getElementById('eq'+n);
+  var btns=el.querySelectorAll('.equip-btn');
+  btns[1].classList.add('bad');btns[0].classList.remove('ok');
+  document.getElementById('eq'+n+'-fault').style.display='block';
+  el.style.background='#fff8f5';
+}
+
+function selRec(v){
+  document.getElementById('rec-yes').classList.toggle('sel',v==='yes');
+  document.getElementById('rec-no').classList.toggle('sel',v==='no');
+  document.getElementById('rec-form').classList.toggle('hidden',v!=='yes');
+  document.getElementById('rec-no-msg').classList.toggle('hidden',v!=='no');
+}
+
+function saveProgress(){
+  try{sessionStorage.setItem('synel_off_done',JSON.stringify(done));sessionStorage.setItem('synel_off_screen',currentScreen.toString());}catch(e){}
+}
+function loadProgress(){
+  try{
+    var d=sessionStorage.getItem('synel_off_done');
+    var ls=sessionStorage.getItem('synel_off_screen');
+    if(d) done=JSON.parse(d);
+    if(ls && parseInt(ls)>1) showReminder(parseInt(ls));
+  }catch(e){}
+}
+function showReminder(lastStep){
+  var stepNames={2:'דשבורד',3:'ראיון עזיבה',4:'טופס 161',5:'החזרת ציוד',6:'לו"ז יום אחרון',7:'חפיפה',8:'מכתב המלצה'};
+  var stepName=stepNames[lastStep]||'';
+  var overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:2000;display:flex;align-items:center;justify-content:center';
+  var box=document.createElement('div');
+  box.style.cssText='background:#fff;border-radius:20px;padding:24px;max-width:300px;width:88%;text-align:center';
+  var t=document.createElement('div');t.style.cssText='font-size:17px;font-weight:600;color:#1a1a1a;margin-bottom:8px';t.textContent='המשיכי מאיפה שעצרת';
+  var s=document.createElement('div');s.style.cssText='font-size:14px;color:#888;margin-bottom:20px;line-height:1.5';s.innerHTML='עצרת בשלב<br><strong style="color:#1a1a1a">'+stepName+'</strong>';
+  var b1=document.createElement('button');b1.style.cssText='width:100%;background:#E8593C;color:#fff;border:none;border-radius:14px;padding:13px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;margin-bottom:10px';b1.textContent='המשיכי משם ←';b1.onclick=function(){overlay.remove();goTo(lastStep);};
+  var b2=document.createElement('button');b2.style.cssText='width:100%;background:transparent;border:none;color:#888;font-size:14px;cursor:pointer;padding:8px';b2.textContent='התחילי מחדש';b2.onclick=function(){overlay.remove();goTo(1);};
+  box.appendChild(t);box.appendChild(s);box.appendChild(b1);box.appendChild(b2);
+  overlay.appendChild(box);document.body.appendChild(overlay);
+}
+
+function resetDemo(){
+  var modal=document.createElement('div');
+  modal.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:2000;display:flex;align-items:center;justify-content:center';
+  var box=document.createElement('div');box.style.cssText='background:#fff;border-radius:20px;padding:24px;max-width:300px;width:88%;text-align:center';
+  var t=document.createElement('div');t.style.cssText='font-size:17px;font-weight:600;color:#1a1a1a;margin-bottom:8px';t.textContent='לאפס את הדמו?';
+  var s=document.createElement('div');s.style.cssText='font-size:14px;color:#888;margin-bottom:20px;line-height:1.5';s.textContent='כל הנתונים יימחקו והתהליך יתחיל מחדש.';
+  var b1=document.createElement('button');b1.style.cssText='width:100%;background:#E8593C;color:#fff;border:none;border-radius:14px;padding:13px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;margin-bottom:10px';b1.textContent='כן, אפס';b1.onclick=function(){modal.remove();doReset();};
+  var b2=document.createElement('button');b2.style.cssText='width:100%;background:transparent;border:none;color:#888;font-size:14px;cursor:pointer;padding:8px';b2.textContent='ביטול';b2.onclick=function(){modal.remove();};
+  box.appendChild(t);box.appendChild(s);box.appendChild(b1);box.appendChild(b2);modal.appendChild(box);document.body.appendChild(modal);
+}
+function doReset(){
+  try{sessionStorage.clear();}catch(e){}
+  done=[];doc161Read=false;sig161Drawn=false;currentScreen=1;
+  var btn161=document.getElementById('btn-161');if(btn161) btn161.disabled=true;
+  var dv=document.getElementById('doc161-viewer');if(dv) dv.classList.add('hidden');
+  var ss=document.getElementById('sign161-section');if(ss) ss.classList.add('hidden');
+  var dw=document.getElementById('doc161-warning');if(dw) dw.classList.remove('hidden');
+  var sc=document.getElementById('sig-canvas-161');if(sc){var ctx=sc.getContext('2d');ctx.clearRect(0,0,sc.width,sc.height);}
+  var st=document.getElementById('sig-status-161');if(st){st.textContent='ממתין לחתימה...';st.style.color='';}
+  document.querySelectorAll('#s3 .opt').forEach(function(o){o.classList.remove('sel','sel-green');});
+  document.querySelectorAll('#stars .star').forEach(function(s){s.classList.remove('active');});
+  [1,2,3,4].forEach(function(n){var eq=document.getElementById('eq'+n);if(eq){eq.style.background='';var btns=eq.querySelectorAll('.equip-btn');btns[0]&&btns[0].classList.remove('ok');btns[1]&&btns[1].classList.remove('bad');var f=document.getElementById('eq'+n+'-fault');if(f) f.style.display='none';}});
+  document.getElementById('rec-yes')&&document.getElementById('rec-yes').classList.remove('sel');
+  document.getElementById('rec-no')&&document.getElementById('rec-no').classList.remove('sel');
+  document.getElementById('rec-form')&&document.getElementById('rec-form').classList.add('hidden');
+  document.getElementById('rec-no-msg')&&document.getElementById('rec-no-msg').classList.add('hidden');
+  goTo(1);
+}
+
+function confetti(){
+  var cv=document.getElementById('confetti'),ctx=cv.getContext('2d');
+  cv.width=window.innerWidth;cv.height=window.innerHeight;
+  var ps=[],cols=['#E8593C','#1D9E75','#378ADD','#EF9F27','#D4537E','#7F77DD'];
+  for(var i=0;i<140;i++) ps.push({x:Math.random()*cv.width,y:-20-Math.random()*cv.height,w:Math.random()*10+5,h:Math.random()*6+4,c:cols[Math.floor(Math.random()*cols.length)],r:Math.random()*360,rv:(Math.random()-.5)*6,vy:Math.random()*3+2,vx:(Math.random()-.5)*2});
+  var f=0;
+  function draw(){ctx.clearRect(0,0,cv.width,cv.height);ps.forEach(function(p){ctx.save();ctx.translate(p.x+p.w/2,p.y+p.h/2);ctx.rotate(p.r*Math.PI/180);ctx.fillStyle=p.c;ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);ctx.restore();p.y+=p.vy;p.x+=p.vx;p.r+=p.rv;});if(++f<220) requestAnimationFrame(draw);else ctx.clearRect(0,0,cv.width,cv.height);}
+  draw();
+}
+
+window.addEventListener('load',function(){loadProgress();});
+</script>
+</body>
+</html>
